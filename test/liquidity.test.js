@@ -9,8 +9,8 @@ const WTH = "0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48"
 const DAI_WHALE = "0x2FAF487A4414Fe77e2327F0bf4AE2a264a776AD2"
 const WTH_WHALE = "0x2FAF487A4414Fe77e2327F0bf4AE2a264a776AD2"
 
-describe("LiquidityExamples", () => {
-  let liquidityExamples
+describe("Liquidity", () => {
+  let uniswapV3NFT
   let accounts
   let dai
   let wth
@@ -18,11 +18,11 @@ describe("LiquidityExamples", () => {
   before(async () => {
     accounts = await ethers.getSigners(1)
 
-    const LiquidityExamples = await ethers.getContractFactory(
-      "LiquidityExamples"
+    const UniswapV3NFT = await ethers.getContractFactory(
+      "UniswapV3NFT"
     )
-    liquidityExamples = await LiquidityExamples.deploy()
-    await liquidityExamples.deployed()
+    uniswapV3NFT = await UniswapV3NFT.deploy()
+    await uniswapV3NFT.deployed()
 
     dai = await ethers.getContractAt("IERC20", DAI)
     wth = await ethers.getContractAt("IERC20", WTH)
@@ -52,18 +52,18 @@ describe("LiquidityExamples", () => {
     console.log(ethAmount);
   })
 
-  it("mintNewPosition", async () => {
+  it("mint", async () => {
     const daiAmount = 100n * 10n ** 18n
     const ethAmount = 100n * 10n ** 6n
 
     await dai
       .connect(accounts[0])
-      .transfer(liquidityExamples.address, daiAmount)
+      .transfer(uniswapV3NFT.address, daiAmount)
     await wth
       .connect(accounts[0])
-      .transfer(liquidityExamples.address, ethAmount)
+      .transfer(uniswapV3NFT.address, ethAmount)
 
-    await liquidityExamples.mintNewPosition()
+    await uniswapV3NFT.mintNewPosition()
 
     console.log(
       "DAI balance after add liquidity",
@@ -79,31 +79,48 @@ describe("LiquidityExamples", () => {
     const daiAmount = 20n * 10n ** 18n
     const ethAmount = 20n * 10n ** 6n
 
-    await dai.connect(accounts[0]).approve(liquidityExamples.address, daiAmount)
+    await dai.connect(accounts[0]).approve(uniswapV3NFT.address, daiAmount)
     await wth
       .connect(accounts[0])
-      .approve(liquidityExamples.address, ethAmount)
+      .approve(uniswapV3NFT.address, ethAmount)
 
-    await liquidityExamples.increaseLiquidityCurrentRange(daiAmount, ethAmount)
+    await uniswapV3NFT.increaseLiquidityCurrentRange(daiAmount, ethAmount)
   })
 
   it("decreaseLiquidity", async () => {
-    const tokenId = await liquidityExamples.tokenId()
-    const liquidity = await liquidityExamples.getLiquidity(tokenId)
+    const tokenId = await uniswapV3NFT.tokenId()
+    const liquidity = await uniswapV3NFT.getLiquidity(tokenId)
 
-    await liquidityExamples.decreaseLiquidity(liquidity)
+    await uniswapV3NFT.decreaseLiquidity(liquidity)
 
     console.log("--- decrease liquidity ---")
     console.log(`liquidity ${liquidity}`)
-    console.log(`dai ${await dai.balanceOf(liquidityExamples.address)}`)
-    console.log(`ETH ${await wth.balanceOf(liquidityExamples.address)}`)
+    console.log(`dai ${await dai.balanceOf(uniswapV3NFT.address)}`)
+    console.log(`ETH ${await wth.balanceOf(uniswapV3NFT.address)}`)
   })
 
   it("collectAllFees", async () => {
-    await liquidityExamples.collectAllFees()
+    await uniswapV3NFT.collectAllFees()
 
     console.log("--- collect fees ---")
-    console.log(`dai ${await dai.balanceOf(liquidityExamples.address)}`)
-    console.log(`ETH ${await wth.balanceOf(liquidityExamples.address)}`)
+    console.log(`dai ${await dai.balanceOf(uniswapV3NFT.address)}`)
+    console.log(`ETH ${await wth.balanceOf(uniswapV3NFT.address)}`)
+  })
+
+  it("Burn", async () => {
+    const tokenId = await uniswapV3NFT.tokenId()
+    const liquidity = await uniswapV3NFT.retrieveNFT(tokenId)
+
+    
+
+    
+    console.log(
+      "DAI balance after token burn",
+      await dai.balanceOf(accounts[0].address)
+    )
+    console.log(
+      "ETH balance after token burn",
+      await wth.balanceOf(accounts[0].address)
+    )
   })
 })

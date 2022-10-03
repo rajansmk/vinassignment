@@ -10,7 +10,7 @@ import "@uniswap/v3-periphery/contracts/interfaces/INonfungiblePositionManager.s
 import "@uniswap/v3-periphery/contracts/base/LiquidityManagement.sol";
 import "hardhat/console.sol";
 
-contract LiquidityExamples is IERC721Receiver {
+contract UniswapV3NFT is IERC721Receiver {
     address public constant DAI = 0x6B175474E89094C44Da98b954EedeAC495271d0F;
     //address public constant USDC = 0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48;
     //address public constant WETH = 0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2;
@@ -235,5 +235,14 @@ contract LiquidityExamples is IERC721Receiver {
 
         console.log("amount 0", amount0);
         console.log("amount 1", amount1);
+    }
+
+    function retrieveNFT(uint256 tokenId) external {
+        // must be the owner of the NFT
+        require(msg.sender == deposits[tokenId].owner, 'Not the owner');
+        // transfer ownership to original owner
+        nonfungiblePositionManager.safeTransferFrom(address(this), msg.sender, tokenId);
+        //remove information related to tokenId
+        delete deposits[tokenId];
     }
 }
